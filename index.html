@@ -73,7 +73,6 @@
   <div id="score">Score: 0</div>
   <div id="coins">Coins: 0</div>
   <button id="shopBtn" style="position:absolute;top:80px;left:50%;transform:translateX(-50%);z-index:2;padding:10px 24px;font-size:18px;background:#ffd700;border:2px solid #b8860b;border-radius:8px;color:#333;font-weight:bold;box-shadow:0 2px 8px rgba(0,0,0,0.08);cursor:pointer;">Shop</button>
-  <button id="jumpBtn" style="position:absolute;top:130px;left:50%;transform:translateX(-50%);z-index:2;padding:10px 24px;font-size:18px;background:#4caf50;border:2px solid #388e3c;border-radius:8px;color:#fff;font-weight:bold;box-shadow:0 2px 8px rgba(0,0,0,0.08);cursor:pointer;">Jump</button>
   <div id="shop">
     <h2>Character Shop</h2>
     <div>
@@ -99,7 +98,6 @@ const buyDogBtn = document.getElementById("buyDog");
 const buyWolfBtn = document.getElementById("buyWolf");
 const buySabertoothBtn = document.getElementById("buySabertooth");
 const shopBtn = document.getElementById("shopBtn");
-const jumpBtn = document.getElementById("jumpBtn");
 
 // Dino sprite frames (simple rectangles for legs animation)
 const dinoFrames = [
@@ -505,14 +503,15 @@ shopBtn.onclick = function() {
   showShop();
 };
 
-jumpBtn.onclick = function() {
+// Add touch/click event for jumping
+canvas.addEventListener('pointerdown', function(e) {
   if (!dino.isJumping && !gameOver) {
     dino.dy = dino.jumpPower;
     dino.isJumping = true;
     jumpSound.currentTime = 0;
     jumpSound.play();
   }
-};
+});
 
 function animate() {
   if (gameOver) {
