@@ -5,89 +5,197 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dino Run</title>
   <style>
+    :root {
+      --blue-dark: #0a1424;
+      --blue-light: #1a2b4c;
+      --blue-glow: #00eaff;
+      --yellow: #ffe066;
+      --yellow-glow: #ffe06699;
+      --gray: #b0b8c1;
+      --button-bg: #18243a;
+      --button-border: #00eaff;
+      --button-hover: #22345a;
+      --button-active: #00eaff;
+      --font-main: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+    }
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&display=swap');
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      position: auto;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    html, body {
+      width: 100vw;
       height: 100vh;
-      background: #f7f7f7;
-      font-family: sans-serif;
+      background: var(--blue-dark);
+      font-family: var(--font-main);
       overflow: hidden;
     }
-    canvas {
-      position: auto;
-      background: #fff;
-      border: 2px solid #333;
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
     }
-    #score, #coins {
+    #hud {
+      width: 100vw;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 2vw 4vw 0 4vw;
       position: absolute;
-      top: 20px;
+      top: 0;
+      left: 0;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .hud-box {
+      background: linear-gradient(90deg, var(--blue-light) 80%, var(--blue-glow) 100%);
+      color: var(--yellow);
+      font-size: clamp(16px, 3vw, 32px);
+      font-weight: 800;
+      letter-spacing: 2px;
+      border-radius: 12px;
+      box-shadow: 0 0 16px var(--blue-glow), 0 2px 8px #000c;
+      padding: 0.7em 1.5em;
+      margin: 0 0.5em;
+      border: 2px solid var(--blue-glow);
+      text-shadow: 0 0 8px var(--yellow-glow), 0 2px 4px #000a;
+      pointer-events: auto;
+      user-select: none;
+    }
+    #shopBtn {
+      position: absolute;
+      top: 2vw;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 20px;
-      font-weight: bold;
-      color: #333;
-      z-index: 2;
+      z-index: 3;
+      padding: 0.7em 2.5em;
+      font-size: clamp(18px, 3vw, 32px);
+      font-family: var(--font-main);
+      font-weight: 800;
+      background: var(--button-bg);
+      color: var(--yellow);
+      border: 2px solid var(--button-border);
+      border-radius: 12px;
+      box-shadow: 0 0 12px var(--blue-glow), 0 2px 8px #000c;
+      cursor: pointer;
+      transition: background 0.2s, border 0.2s, color 0.2s;
+      text-shadow: 0 0 8px var(--yellow-glow), 0 2px 4px #000a;
     }
-    #coins {
-      top: 50px;
-      font-size: 18px;
-      color: #b8860b;
+    #shopBtn:hover, #shopBtn:focus {
+      background: var(--button-hover);
+      border-color: var(--yellow);
+      color: var(--blue-glow);
     }
     #shop {
-      position: auto;
-      top: 100px;
+      position: absolute;
+      top: 12vw;
       left: 50%;
       transform: translateX(-50%);
-      background: #fff;
-      border: 2px solid #333;
-      padding: 20px;
+      background: var(--blue-light);
+      border: 2px solid var(--blue-glow);
+      border-radius: 18px;
+      box-shadow: 0 0 32px var(--blue-glow), 0 2px 16px #000c;
+      padding: 3vw 5vw;
       display: none;
-      z-index: 3;
-      border-radius: 10px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      z-index: 10;
+      min-width: 300px;
+      max-width: 90vw;
+      color: var(--yellow);
+      text-align: center;
     }
-    #shop h2 { margin-bottom: 10px; }
+    #shop h2 {
+      font-size: clamp(24px, 4vw, 40px);
+      margin-bottom: 1vw;
+      color: var(--yellow);
+      text-shadow: 0 0 12px var(--yellow-glow);
+      font-weight: 800;
+    }
     .character-btn {
-      margin: 10px;
-      padding: 10px 20px;
-      border: 1px solid #333;
-      border-radius: 6px;
-      background: #eee;
-      cursor: pointer;
+      margin: 1vw;
+      padding: 1vw 3vw;
+      border: 2px solid var(--blue-glow);
+      border-radius: 10px;
+      background: var(--button-bg);
+      color: var(--yellow);
       font-weight: bold;
-      transition: background 0.2s;
+      font-size: clamp(16px, 2.5vw, 28px);
+      font-family: var(--font-main);
+      box-shadow: 0 0 8px var(--blue-glow);
+      cursor: pointer;
+      transition: background 0.2s, border 0.2s, color 0.2s;
+      text-shadow: 0 0 8px var(--yellow-glow);
+    }
+    .character-btn.selected, .character-btn:active {
+      border-color: var(--yellow);
+      color: var(--blue-glow);
+      background: var(--button-hover);
     }
     .character-btn:disabled {
-      background: #ccc;
+      background: #222b;
       color: #888;
+      border-color: #555;
       cursor: not-allowed;
+      box-shadow: none;
     }
-    .selected {
-      border: 2px solid #b8860b;
-      background: #fffbe6;
+    #shop span {
+      color: var(--gray);
+      font-size: clamp(12px, 2vw, 18px);
+      display: block;
+      margin-top: 1vw;
+      text-shadow: none;
+    }
+    #gameCanvas {
+      display: block;
+      margin: 0 auto;
+      background: linear-gradient(180deg, #151f33 0%, #0a1424 100%);
+      border: 3px solid var(--blue-glow);
+      border-radius: 18px;
+      box-shadow: 0 0 32px var(--blue-glow), 0 2px 16px #000c;
+      width: 96vw;
+      max-width: 800px;
+      height: 48vw;
+      max-height: 300px;
+      margin-top: 10vw;
+    }
+    @media (max-width: 600px) {
+      #gameCanvas {
+        width: 98vw;
+        height: 54vw;
+        max-width: 100vw;
+        max-height: 60vw;
+        margin-top: 18vw;
+      }
+      #shop {
+        top: 22vw;
+        padding: 5vw 2vw;
+        min-width: 0;
+      }
+      #shopBtn {
+        top: 6vw;
+        font-size: 6vw;
+        padding: 3vw 10vw;
+      }
+      #hud {
+        padding: 4vw 2vw 0 2vw;
+      }
     }
   </style>
 </head>
 <body>
-  <div id="score">Score: 0</div>
-  <div id="coins">Coins: 0</div>
-  <button id="shopBtn" style="position:absolute;top:80px;left:50%;transform:translateX(-50%);z-index:2;padding:10px 24px;font-size:18px;background:#ffd700;border:2px solid #b8860b;border-radius:8px;color:#333;font-weight:bold;box-shadow:0 2px 8px rgba(0,0,0,0.08);cursor:pointer;">Shop</button>
+  <div id="hud">
+    <div id="score" class="hud-box">SCORE: 0</div>
+    <div id="coins" class="hud-box">COINS: 0</div>
+  </div>
+  <button id="shopBtn">SHOP</button>
   <div id="shop">
-    <h2>Character Shop</h2>
+    <h2>CHARACTER SHOP</h2>
     <div>
       <button class="character-btn" id="buyDog">Dog (50 coins)</button>
       <button class="character-btn" id="buyWolf">Wolf (100 coins)</button>
       <button class="character-btn" id="buySabertooth">Sabertooth (200 coins)</button>
     </div>
-    <div style="margin-top:10px;">
-      <span>Click to select unlocked character.</span>
-    </div>
+    <span>Tap to select unlocked character.</span>
   </div>
   <canvas id="gameCanvas" width="800" height="300"></canvas>
-
   <script>
 // filepath: c:\Users\Joshua Sitorus\OneDrive\Desktop\dino 2\index.html
 
@@ -101,75 +209,101 @@ const buyWolfBtn = document.getElementById("buyWolf");
 const buySabertoothBtn = document.getElementById("buySabertooth");
 const shopBtn = document.getElementById("shopBtn");
 
+// Responsive canvas for crisp graphics
+function resizeCanvas() {
+  let vw = window.innerWidth;
+  let vh = window.innerHeight;
+  let aspect = 800 / 300;
+  let width, height;
+  if (vw / vh > aspect) {
+    height = Math.min(vh * 0.6, 300);
+    width = height * aspect;
+  } else {
+    width = Math.min(vw * 0.98, 800);
+    height = width / aspect;
+  }
+  canvas.style.width = width + "px";
+  canvas.style.height = height + "px";
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.round(width * dpr);
+  canvas.height = Math.round(height * dpr);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.scale(dpr, dpr);
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
 // Dino sprite frames (simple rectangles for legs animation)
 const dinoFrames = [
   { legOffset: 5 },
   { legOffset: -5 }
 ];
 
-// Characters definition
+// Characters definition (drawn with neon style)
 const CHARACTERS = [
   {
     name: "dino",
     draw: function(x, y, frame) {
       // Body
+      ctx.save();
+      ctx.shadowColor = "#00eaff";
+      ctx.shadowBlur = 10;
       ctx.fillStyle = "#333";
       ctx.fillRect(x, y, 40, 40);
       // Head
       ctx.fillStyle = "#444";
       ctx.fillRect(x + 28, y + 8, 18, 18);
       // Eye
-      ctx.fillStyle = "#fff";
+      ctx.fillStyle = "#ffe066";
       ctx.beginPath();
       ctx.arc(x + 40, y + 16, 3, 0, Math.PI * 2);
       ctx.fill();
       // Legs
-      ctx.fillStyle = "#222";
+      ctx.fillStyle = "#00eaff";
       let legOffset = dinoFrames[frame].legOffset;
       ctx.fillRect(x + 5, y + 40, 8, 12 + legOffset);
       ctx.fillRect(x + 27, y + 40, 8, 12 - legOffset);
+      ctx.restore();
     }
   },
   {
     name: "dog",
     draw: function(x, y, frame) {
-      // Body
+      ctx.save();
+      ctx.shadowColor = "#ffe066";
+      ctx.shadowBlur = 10;
       ctx.fillStyle = "#a0522d";
       ctx.fillRect(x, y + 10, 40, 25);
-      // Head
       ctx.fillStyle = "#deb887";
       ctx.fillRect(x + 30, y, 18, 18);
-      // Ear
       ctx.fillStyle = "#8b4513";
       ctx.fillRect(x + 42, y - 6, 6, 10);
-      // Eye
-      ctx.fillStyle = "#222";
+      ctx.fillStyle = "#ffe066";
       ctx.beginPath();
       ctx.arc(x + 44, y + 8, 2, 0, Math.PI * 2);
       ctx.fill();
-      // Tail
       ctx.strokeStyle = "#8b4513";
       ctx.beginPath();
       ctx.moveTo(x, y + 20);
       ctx.lineTo(x - 10, y + 10 + (frame ? 8 : 0));
       ctx.stroke();
-      // Legs
-      ctx.fillStyle = "#8b4513";
+      ctx.fillStyle = "#00eaff";
       let legOffset = dinoFrames[frame].legOffset;
       ctx.fillRect(x + 8, y + 35, 6, 12 + legOffset);
       ctx.fillRect(x + 26, y + 35, 6, 12 - legOffset);
+      ctx.restore();
     }
   },
   {
     name: "wolf",
     draw: function(x, y, frame) {
-      // Body
+      ctx.save();
+      ctx.shadowColor = "#00eaff";
+      ctx.shadowBlur = 10;
       ctx.fillStyle = "#666";
       ctx.fillRect(x, y + 8, 40, 28);
-      // Head
       ctx.fillStyle = "#bbb";
       ctx.fillRect(x + 30, y, 18, 18);
-      // Ear
       ctx.fillStyle = "#444";
       ctx.beginPath();
       ctx.moveTo(x + 42, y - 6);
@@ -177,58 +311,53 @@ const CHARACTERS = [
       ctx.lineTo(x + 38, y + 2);
       ctx.closePath();
       ctx.fill();
-      // Eye
-      ctx.fillStyle = "#222";
+      ctx.fillStyle = "#ffe066";
       ctx.beginPath();
       ctx.arc(x + 44, y + 8, 2, 0, Math.PI * 2);
       ctx.fill();
-      // Tail
       ctx.strokeStyle = "#444";
       ctx.beginPath();
       ctx.moveTo(x, y + 20);
       ctx.lineTo(x - 12, y + 8 + (frame ? 10 : 0));
       ctx.stroke();
-      // Legs
-      ctx.fillStyle = "#444";
+      ctx.fillStyle = "#00eaff";
       let legOffset = dinoFrames[frame].legOffset;
       ctx.fillRect(x + 8, y + 36, 6, 12 + legOffset);
       ctx.fillRect(x + 26, y + 36, 6, 12 - legOffset);
+      ctx.restore();
     }
   },
   {
     name: "sabertooth",
     draw: function(x, y, frame) {
-      // Body
+      ctx.save();
+      ctx.shadowColor = "#ffe066";
+      ctx.shadowBlur = 10;
       ctx.fillStyle = "#c2b280";
       ctx.fillRect(x, y + 6, 40, 30);
-      // Head
       ctx.fillStyle = "#eedd82";
       ctx.fillRect(x + 30, y, 18, 18);
-      // Ear
       ctx.fillStyle = "#bdb76b";
       ctx.beginPath();
       ctx.arc(x + 44, y + 2, 5, 0, Math.PI, true);
       ctx.fill();
-      // Eye
-      ctx.fillStyle = "#222";
+      ctx.fillStyle = "#ffe066";
       ctx.beginPath();
       ctx.arc(x + 44, y + 8, 2, 0, Math.PI * 2);
       ctx.fill();
-      // Teeth
       ctx.fillStyle = "#fff";
       ctx.fillRect(x + 46, y + 16, 2, 8);
       ctx.fillRect(x + 40, y + 16, 2, 8);
-      // Tail
       ctx.strokeStyle = "#bdb76b";
       ctx.beginPath();
       ctx.moveTo(x, y + 20);
       ctx.lineTo(x - 14, y + 12 + (frame ? 8 : 0));
       ctx.stroke();
-      // Legs
-      ctx.fillStyle = "#bdb76b";
+      ctx.fillStyle = "#00eaff";
       let legOffset = dinoFrames[frame].legOffset;
       ctx.fillRect(x + 8, y + 36, 6, 12 + legOffset);
       ctx.fillRect(x + 26, y + 36, 6, 12 - legOffset);
+      ctx.restore();
     }
   }
 ];
@@ -283,19 +412,27 @@ document.addEventListener("keydown", (e) => {
 });
 
 function drawGround() {
-  ctx.fillStyle = "#bbb";
+  ctx.save();
+  ctx.shadowColor = "#00eaff";
+  ctx.shadowBlur = 8;
+  ctx.fillStyle = "#1a2b4c";
   ctx.fillRect(0, 260, canvas.width, 10);
-  ctx.strokeStyle = "#888";
+  ctx.strokeStyle = "#00eaff";
+  ctx.lineWidth = 2;
   ctx.beginPath();
   for (let i = 0; i < canvas.width; i += 20) {
     ctx.moveTo(i, 270);
     ctx.lineTo(i + 10, 260);
   }
   ctx.stroke();
+  ctx.restore();
 }
 
 function drawClouds() {
-  ctx.fillStyle = "#e0e0e0";
+  ctx.save();
+  ctx.shadowColor = "#00eaff";
+  ctx.shadowBlur = 12;
+  ctx.fillStyle = "#2a3b5c99";
   clouds.forEach(cloud => {
     ctx.beginPath();
     ctx.arc(cloud.x, cloud.y, cloud.size, 0, Math.PI * 2);
@@ -303,6 +440,7 @@ function drawClouds() {
     ctx.arc(cloud.x + cloud.size * 0.5, cloud.y - cloud.size * 0.5, cloud.size * 0.5, 0, Math.PI * 2);
     ctx.fill();
   });
+  ctx.restore();
 }
 
 function updateClouds() {
@@ -324,10 +462,14 @@ function drawCharacter() {
 
 function drawObstacles() {
   obstacles.forEach(obs => {
+    ctx.save();
+    ctx.shadowColor = "#00eaff";
+    ctx.shadowBlur = 8;
     ctx.fillStyle = obs.color;
     ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-    ctx.fillStyle = "#2e7d32";
+    ctx.fillStyle = "#ffe066";
     ctx.fillRect(obs.x + obs.width / 2 - 2, obs.y - 8, 4, 8);
+    ctx.restore();
   });
 }
 
@@ -369,17 +511,19 @@ function updateObstacles() {
 function drawCoins() {
   coins.forEach(coin => {
     ctx.save();
+    ctx.shadowColor = "#ffe066";
+    ctx.shadowBlur = 16;
     ctx.translate(coin.x + coin.radius, coin.y + coin.radius);
     ctx.rotate(frame / 20);
     ctx.beginPath();
     ctx.arc(0, 0, coin.radius, 0, Math.PI * 2);
-    ctx.fillStyle = "#ffd700";
+    ctx.fillStyle = "#ffe066";
     ctx.fill();
-    ctx.strokeStyle = "#b8860b";
+    ctx.strokeStyle = "#00eaff";
     ctx.lineWidth = 2;
     ctx.stroke();
-    ctx.font = "bold 14px Arial";
-    ctx.fillStyle = "#fff";
+    ctx.font = "bold 14px Orbitron, Arial";
+    ctx.fillStyle = "#1a2b4c";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText("C", 0, 2);
@@ -410,7 +554,7 @@ function detectCoinCollision() {
       dino.y + dino.height > coin.y
     ) {
       coinCount++;
-      coinsElement.innerText = "Coins: " + coinCount;
+      coinsElement.innerText = "COINS: " + coinCount;
       coinSound.currentTime = 0;
       coinSound.play();
       coins.splice(idx, 1);
@@ -435,7 +579,7 @@ function detectCollision() {
 
 function updateScore() {
   score++;
-  scoreElement.innerText = "Score: " + score;
+  scoreElement.innerText = "SCORE: " + score;
 }
 
 function resetGame() {
@@ -471,7 +615,7 @@ buyDogBtn.onclick = function() {
   if (!unlocked.dog && coinCount >= 50) {
     unlocked.dog = true;
     coinCount -= 50;
-    coinsElement.innerText = "Coins: " + coinCount;
+    coinsElement.innerText = "COINS: " + coinCount;
   }
   selectedCharacter = 1;
   showShop();
@@ -480,7 +624,7 @@ buyWolfBtn.onclick = function() {
   if (!unlocked.wolf && coinCount >= 100) {
     unlocked.wolf = true;
     coinCount -= 100;
-    coinsElement.innerText = "Coins: " + coinCount;
+    coinsElement.innerText = "COINS: " + coinCount;
   }
   selectedCharacter = 2;
   showShop();
@@ -489,7 +633,7 @@ buySabertoothBtn.onclick = function() {
   if (!unlocked.sabertooth && coinCount >= 200) {
     unlocked.sabertooth = true;
     coinCount -= 200;
-    coinsElement.innerText = "Coins: " + coinCount;
+    coinsElement.innerText = "COINS: " + coinCount;
   }
   selectedCharacter = 3;
   showShop();
@@ -506,7 +650,7 @@ shopBtn.onclick = function() {
   showShop();
 };
 
-// Add touch/click event for jumping
+// Touch/click event for jumping and restart
 canvas.addEventListener('pointerdown', function(e) {
   if (!dino.isJumping && !gameOver) {
     dino.dy = dino.jumpPower;
@@ -522,15 +666,22 @@ canvas.addEventListener('pointerdown', function(e) {
 
 function animate() {
   if (gameOver) {
-    ctx.fillStyle = "rgba(0,0,0,0.5)";
+    ctx.save();
+    ctx.fillStyle = "rgba(10,20,36,0.85)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.shadowColor = "#ffe066";
+    ctx.shadowBlur = 20;
+    ctx.fillStyle = "#ffe066";
+    ctx.font = "bold 40px Orbitron, Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("GAME OVER!", canvas.width / 2, canvas.height / 2 - 30);
+    ctx.font = "bold 24px Orbitron, Arial";
+    ctx.fillStyle = "#00eaff";
+    ctx.fillText("Tap screen or press Enter to Restart", canvas.width / 2, canvas.height / 2 + 10);
+    ctx.font = "bold 18px Orbitron, Arial";
     ctx.fillStyle = "#fff";
-    ctx.font = "30px Arial";
-    ctx.fillText("Game Over!", canvas.width / 2 - 80, canvas.height / 2 - 20);
-    ctx.font = "20px Arial";
-    ctx.fillText("Press Enter to Restart", canvas.width / 2 - 110, canvas.height / 2 + 20);
-    ctx.font = "16px Arial";
-    ctx.fillText("Press 'C' to open shop", canvas.width / 2 - 80, canvas.height / 2 + 50);
+    ctx.fillText("Press 'C' for Shop", canvas.width / 2, canvas.height / 2 + 40);
+    ctx.restore();
     return;
   }
 
