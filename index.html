@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dino Run</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f7f7f7;
+      font-family: sans-serif;
+      overflow: hidden;
+    }
+    canvas {
+      background: #fff;
+      border: 2px solid #333;
+    }
+    #score, #coins {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      z-index: 2;
+    }
+    #coins {
+      top: 50px;
+      font-size: 18px;
+      color: #b8860b;
+    }
+    #shop {
+      position: absolute;
+      top: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      border: 2px solid #333;
+      padding: 20px;
+      display: none;
+      z-index: 3;
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    #shop h2 { margin-bottom: 10px; }
+    .character-btn {
+      margin: 10px;
+      padding: 10px 20px;
+      border: 1px solid #333;
+      border-radius: 6px;
+      background: #eee;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+    .character-btn:disabled {
+      background: #ccc;
+      color: #888;
+      cursor: not-allowed;
+    }
+    .selected {
+      border: 2px solid #b8860b;
+      background: #fffbe6;
+    }
+  </style>
+</head>
+<body>
+  <div id="score">Score: 0</div>
+  <div id="coins">Coins: 0</div>
+  <button id="shopBtn" style="position:absolute;top:80px;left:50%;transform:translateX(-50%);z-index:2;padding:10px 24px;font-size:18px;background:#ffd700;border:2px solid #b8860b;border-radius:8px;color:#333;font-weight:bold;box-shadow:0 2px 8px rgba(0,0,0,0.08);cursor:pointer;">Shop</button>
+  <div id="shop">
+    <h2>Character Shop</h2>
+    <div>
+      <button class="character-btn" id="buyDog">Dog (50 coins)</button>
+      <button class="character-btn" id="buyWolf">Wolf (100 coins)</button>
+      <button class="character-btn" id="buySabertooth">Sabertooth (200 coins)</button>
+    </div>
+    <div style="margin-top:10px;">
+      <span>Click to select unlocked character.</span>
+    </div>
+  </div>
+  <canvas id="gameCanvas" width="800" height="300"></canvas>
+
+  <script>
+// filepath: c:\Users\Joshua Sitorus\OneDrive\Desktop\dino 2\index.html
+
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const scoreElement = document.getElementById("score");
+const coinsElement = document.getElementById("coins");
+const shopElement = document.getElementById("shop");
+const buyDogBtn = document.getElementById("buyDog");
+const buyWolfBtn = document.getElementById("buyWolf");
+const buySabertoothBtn = document.getElementById("buySabertooth");
+const shopBtn = document.getElementById("shopBtn");
+
+// Dino sprite frames (simple rectangles for legs animation)
+const dinoFrames = [
+  { legOffset: 5 },
+  { legOffset: -5 }
+];
+
+// Characters definition
+const CHARACTERS = [
+  {
+    name: "dino",
+    draw: function(x, y, frame) {
+      // Body
+      ctx.fillStyle = "#333";
+      ctx.fillRect(x, y, 40, 40);
+      // Head
+      ctx.fillStyle = "#444";
+      ctx.fillRect(x + 28, y + 8, 18, 18);
+      // Eye
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.arc(x + 40, y + 16, 3, 0, Math.PI * 2);
+      ctx.fill();
+      // Legs
+      ctx.fillStyle = "#222";
+      let legOffset = dinoFrames[frame].legOffset;
+      ctx.fillRect(x + 5, y + 40, 8, 12 + legOffset);
+      ctx.fillRect(x + 27, y + 40, 8, 12 - legOffset);
+    }
+  },
+  {
+    name: "dog",
+    draw: function(x, y, frame) {
+      // Body
+      ctx.fillStyle = "#a0522d";
+      ctx.fillRect(x, y + 10, 40, 25);
+      // Head
+      ctx.fillStyle = "#deb887";
+      ctx.fillRect(x + 30, y, 18, 18);
+      // Ear
+      ctx.fillStyle = "#8b4513";
+      ctx.fillRect(x + 42, y - 6, 6, 10);
+      // Eye
+      ctx.fillStyle = "#222";
+      ctx.beginPath();
+      ctx.arc(x + 44, y + 8, 2, 0, Math.PI * 2);
+      ctx.fill();
+      // Tail
+      ctx.strokeStyle = "#8b4513";
+      ctx.beginPath();
+      ctx.moveTo(x, y + 20);
+      ctx.lineTo(x - 10, y + 10 + (frame ? 8 : 0));
+      ctx.stroke();
+      // Legs
+      ctx.fillStyle = "#8b4513";
+      let legOffset = dinoFrames[frame].legOffset;
+      ctx.fillRect(x + 8, y + 35, 6, 12 + legOffset);
+      ctx.fillRect(x + 26, y + 35, 6, 12 - legOffset);
+    }
+  },
+  {
+    name: "wolf",
+    draw: function(x, y, frame) {
+      // Body
+      ctx.fillStyle = "#666";
+      ctx.fillRect(x, y + 8, 40, 28);
+      // Head
+      ctx.fillStyle = "#bbb";
+      ctx.fillRect(x + 30, y, 18, 18);
+      // Ear
+      ctx.fillStyle = "#444";
+      ctx.beginPath();
+      ctx.moveTo(x + 42, y - 6);
+      ctx.lineTo(x + 46, y + 2);
+      ctx.lineTo(x + 38, y + 2);
+      ctx.closePath();
+      ctx.fill();
+      // Eye
+      ctx.fillStyle = "#222";
+      ctx.beginPath();
+      ctx.arc(x + 44, y + 8, 2, 0, Math.PI * 2);
+      ctx.fill();
+      // Tail
+      ctx.strokeStyle = "#444";
+      ctx.beginPath();
+      ctx.moveTo(x, y + 20);
+      ctx.lineTo(x - 12, y + 8 + (frame ? 10 : 0));
+      ctx.stroke();
+      // Legs
+      ctx.fillStyle = "#444";
+      let legOffset = dinoFrames[frame].legOffset;
+      ctx.fillRect(x + 8, y + 36, 6, 12 + legOffset);
+      ctx.fillRect(x + 26, y + 36, 6, 12 - legOffset);
+    }
+  },
+  {
+    name: "sabertooth",
+    draw: function(x, y, frame) {
+      // Body
+      ctx.fillStyle = "#c2b280";
+      ctx.fillRect(x, y + 6, 40, 30);
+      // Head
+      ctx.fillStyle = "#eedd82";
+      ctx.fillRect(x + 30, y, 18, 18);
+      // Ear
+      ctx.fillStyle = "#bdb76b";
+      ctx.beginPath();
+      ctx.arc(x + 44, y + 2, 5, 0, Math.PI, true);
+      ctx.fill();
+      // Eye
+      ctx.fillStyle = "#222";
+      ctx.beginPath();
+      ctx.arc(x + 44, y + 8, 2, 0, Math.PI * 2);
+      ctx.fill();
+      // Teeth
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(x + 46, y + 16, 2, 8);
+      ctx.fillRect(x + 40, y + 16, 2, 8);
+      // Tail
+      ctx.strokeStyle = "#bdb76b";
+      ctx.beginPath();
+      ctx.moveTo(x, y + 20);
+      ctx.lineTo(x - 14, y + 12 + (frame ? 8 : 0));
+      ctx.stroke();
+      // Legs
+      ctx.fillStyle = "#bdb76b";
+      let legOffset = dinoFrames[frame].legOffset;
+      ctx.fillRect(x + 8, y + 36, 6, 12 + legOffset);
+      ctx.fillRect(x + 26, y + 36, 6, 12 - legOffset);
+    }
+  }
+];
+
+// Character unlock state
+let unlocked = {
+  dog: false,
+  wolf: false,
+  sabertooth: false
+};
+let selectedCharacter = 0; // 0: dino, 1: dog, 2: wolf, 3: sabertooth
+
+let dino = {
+  x: 50,
+  y: 200,
+  width: 40,
+  height: 40,
+  dy: 0,
+  gravity: 1.2,
+  jumpPower: -18,
+  isJumping: false,
+  frame: 0
+};
+
+let obstacles = [];
+let clouds = [];
+let coins = [];
+let frame = 0;
+let score = 0;
+let coinCount = 0;
+let gameOver = false;
+
+// Sound effects
+const jumpSound = new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_115b6c6b2e.mp3");
+const hitSound = new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_115b6c6b2e.mp3");
+const coinSound = new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_115b6c6b2e.mp3");
+
+document.addEventListener("keydown", (e) => {
+  if (e.code === "Space" && !dino.isJumping && !gameOver) {
+    dino.dy = dino.jumpPower;
+    dino.isJumping = true;
+    jumpSound.currentTime = 0;
+    jumpSound.play();
+  }
+  if (gameOver && e.code === "Enter") {
+    resetGame();
+  }
+  // Open shop with 'C' anytime
+  if (e.code === "KeyC") {
+    showShop();
+  }
+});
+
+function drawGround() {
+  ctx.fillStyle = "#bbb";
+  ctx.fillRect(0, 260, canvas.width, 10);
+  ctx.strokeStyle = "#888";
+  ctx.beginPath();
+  for (let i = 0; i < canvas.width; i += 20) {
+    ctx.moveTo(i, 270);
+    ctx.lineTo(i + 10, 260);
+  }
+  ctx.stroke();
+}
+
+function drawClouds() {
+  ctx.fillStyle = "#e0e0e0";
+  clouds.forEach(cloud => {
+    ctx.beginPath();
+    ctx.arc(cloud.x, cloud.y, cloud.size, 0, Math.PI * 2);
+    ctx.arc(cloud.x + cloud.size, cloud.y, cloud.size * 0.7, 0, Math.PI * 2);
+    ctx.arc(cloud.x + cloud.size * 0.5, cloud.y - cloud.size * 0.5, cloud.size * 0.5, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+
+function updateClouds() {
+  if (frame % 120 === 0) {
+    clouds.push({
+      x: canvas.width,
+      y: 60 + Math.random() * 40,
+      size: 20 + Math.random() * 20,
+      speed: 1 + Math.random()
+    });
+  }
+  clouds.forEach(cloud => cloud.x -= cloud.speed);
+  clouds = clouds.filter(cloud => cloud.x + cloud.size > 0);
+}
+
+function drawCharacter() {
+  CHARACTERS[selectedCharacter].draw(dino.x, dino.y, dino.frame);
+}
+
+function drawObstacles() {
+  obstacles.forEach(obs => {
+    ctx.fillStyle = obs.color;
+    ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+    ctx.fillStyle = "#2e7d32";
+    ctx.fillRect(obs.x + obs.width / 2 - 2, obs.y - 8, 4, 8);
+  });
+}
+
+function updateDino() {
+  dino.y += dino.dy;
+  dino.dy += dino.gravity;
+
+  if (dino.y >= 200) {
+    dino.y = 200;
+    dino.isJumping = false;
+  }
+
+  // Animate legs
+  if (!dino.isJumping && frame % 8 === 0) {
+    dino.frame = (dino.frame + 1) % dinoFrames.length;
+  }
+}
+
+function updateObstacles() {
+  obstacles.forEach(obs => {
+    obs.x -= 6;
+  });
+
+  if (frame % 100 === 0) {
+    let height = 30 + Math.random() * 30;
+    let color = ["#388e3c", "#43a047", "#4caf50"][Math.floor(Math.random() * 3)];
+    obstacles.push({
+      x: canvas.width,
+      y: 250 - height,
+      width: 20 + Math.random() * 10,
+      height: height,
+      color: color
+    });
+  }
+
+  obstacles = obstacles.filter(obs => obs.x + obs.width > 0);
+}
+
+function drawCoins() {
+  coins.forEach(coin => {
+    ctx.save();
+    ctx.translate(coin.x + coin.radius, coin.y + coin.radius);
+    ctx.rotate(frame / 20);
+    ctx.beginPath();
+    ctx.arc(0, 0, coin.radius, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffd700";
+    ctx.fill();
+    ctx.strokeStyle = "#b8860b";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.font = "bold 14px Arial";
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("C", 0, 2);
+    ctx.restore();
+  });
+}
+
+function updateCoins() {
+  if (frame % 150 === 0) {
+    coins.push({
+      x: canvas.width,
+      y: 180 + Math.random() * 40,
+      radius: 12,
+      speed: 6
+    });
+  }
+  coins.forEach(coin => coin.x -= coin.speed);
+  coins = coins.filter(coin => coin.x + coin.radius > 0);
+}
+
+function detectCoinCollision() {
+  coins.forEach((coin, idx) => {
+    if (
+      dino.x < coin.x + coin.radius * 2 &&
+      dino.x + dino.width > coin.x &&
+      dino.y < coin.y + coin.radius * 2 &&
+      dino.y + dino.height > coin.y
+    ) {
+      coinCount++;
+      coinsElement.innerText = "Coins: " + coinCount;
+      coinSound.currentTime = 0;
+      coinSound.play();
+      coins.splice(idx, 1);
+    }
+  });
+}
+
+function detectCollision() {
+  for (let obs of obstacles) {
+    if (
+      dino.x < obs.x + obs.width &&
+      dino.x + dino.width > obs.x &&
+      dino.y < obs.y + obs.height &&
+      dino.y + dino.height > obs.y
+    ) {
+      gameOver = true;
+      hitSound.currentTime = 0;
+      hitSound.play();
+    }
+  }
+}
+
+function updateScore() {
+  score++;
+  scoreElement.innerText = "Score: " + score;
+}
+
+function resetGame() {
+  obstacles = [];
+  clouds = [];
+  coins = [];
+  frame = 0;
+  score = 0;
+  dino.y = 200;
+  dino.dy = 0;
+  dino.frame = 0;
+  gameOver = false;
+  animate();
+}
+
+function showShop() {
+  shopElement.style.display = "block";
+  buyDogBtn.disabled = unlocked.dog || coinCount < 50;
+  buyWolfBtn.disabled = unlocked.wolf || coinCount < 100;
+  buySabertoothBtn.disabled = unlocked.sabertooth || coinCount < 200;
+
+  // Highlight selected
+  [buyDogBtn, buyWolfBtn, buySabertoothBtn].forEach((btn, idx) => {
+    btn.classList.toggle("selected", selectedCharacter === idx + 1);
+  });
+}
+
+function hideShop() {
+  shopElement.style.display = "none";
+}
+
+buyDogBtn.onclick = function() {
+  if (!unlocked.dog && coinCount >= 50) {
+    unlocked.dog = true;
+    coinCount -= 50;
+    coinsElement.innerText = "Coins: " + coinCount;
+  }
+  selectedCharacter = 1;
+  showShop();
+};
+buyWolfBtn.onclick = function() {
+  if (!unlocked.wolf && coinCount >= 100) {
+    unlocked.wolf = true;
+    coinCount -= 100;
+    coinsElement.innerText = "Coins: " + coinCount;
+  }
+  selectedCharacter = 2;
+  showShop();
+};
+buySabertoothBtn.onclick = function() {
+  if (!unlocked.sabertooth && coinCount >= 200) {
+    unlocked.sabertooth = true;
+    coinCount -= 200;
+    coinsElement.innerText = "Coins: " + coinCount;
+  }
+  selectedCharacter = 3;
+  showShop();
+};
+
+shopBtn.onclick = function() {
+  showShop();
+};
+
+// Hide shop when clicking outside
+document.addEventListener("mousedown", (e) => {
+  if (shopElement.style.display === "block" && !shopElement.contains(e.target)) {
+    hideShop();
+  }
+});
+
+function animate() {
+  if (gameOver) {
+    ctx.fillStyle = "rgba(0,0,0,0.5)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#fff";
+    ctx.font = "30px Arial";
+    ctx.fillText("Game Over!", canvas.width / 2 - 80, canvas.height / 2 - 20);
+    ctx.font = "20px Arial";
+    ctx.fillText("Press Enter to Restart", canvas.width / 2 - 110, canvas.height / 2 + 20);
+    ctx.font = "16px Arial";
+    ctx.fillText("Press 'C' to open shop", canvas.width / 2 - 80, canvas.height / 2 + 50);
+    return;
+  }
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  drawClouds();
+  drawGround();
+  drawCharacter();
+  drawObstacles();
+  drawCoins();
+  updateDino();
+  updateObstacles();
+  updateClouds();
+  updateCoins();
+  detectCollision();
+  detectCoinCollision();
+
+  if (frame % 5 === 0) updateScore();
+
+  frame++;
+  requestAnimationFrame(animate);
+}
+
+animate();
+  </script>
+</body>
+</html>
