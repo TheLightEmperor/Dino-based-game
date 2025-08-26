@@ -2,91 +2,61 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dino Run</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body {
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      background: #f7f7f7;
-      font-family: sans-serif;
-    }
     body {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
+      height: 100vh;
+      background: #f7f7f7;
+      font-family: sans-serif;
+      overflow: hidden;
     }
     canvas {
-      display: block;
+      position: auto;
       background: #fff;
       border: 2px solid #333;
-      margin: 0 auto;
-      touch-action: manipulation;
-      max-width: 100vw;
-      max-height: 80vh;
-      width: 100vw;
-      height: 80vh;
     }
     #score, #coins {
-      position: absolute;
+      position: auto;
+      top: 20px;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 2.5vw;
+      font-size: 20px;
       font-weight: bold;
       color: #333;
       z-index: 2;
-      pointer-events: none;
-      user-select: none;
     }
-    #score { top: 2vw; }
-    #coins { top: 7vw; color: #b8860b; }
-    #shopBtn {
-      position: absolute;
-      top: 12vw;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 2;
-      padding: 2vw 6vw;
-      font-size: 3vw;
-      background: #ffd700;
-      border: 2px solid #b8860b;
-      border-radius: 8px;
-      color: #333;
-      font-weight: bold;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      cursor: pointer;
+    #coins {
+      top: 50px;
+      font-size: 18px;
+      color: #b8860b;
     }
     #shop {
-      position: absolute;
-      top: 20vw;
+      position: auto;
+      top: 100px;
       left: 50%;
       transform: translateX(-50%);
       background: #fff;
       border: 2px solid #333;
-      padding: 4vw;
+      padding: 20px;
       display: none;
       z-index: 3;
       border-radius: 10px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-      min-width: 60vw;
-      font-size: 3vw;
     }
-    #shop h2 { margin-bottom: 2vw; font-size: 4vw; }
+    #shop h2 { margin-bottom: 10px; }
     .character-btn {
-      margin: 2vw;
-      padding: 2vw 6vw;
+      margin: 10px;
+      padding: 10px 20px;
       border: 1px solid #333;
       border-radius: 6px;
       background: #eee;
       cursor: pointer;
       font-weight: bold;
-      font-size: 3vw;
       transition: background 0.2s;
     }
     .character-btn:disabled {
@@ -97,30 +67,6 @@
     .selected {
       border: 2px solid #b8860b;
       background: #fffbe6;
-    }
-    @media (max-width: 600px) {
-      #score, #coins {
-        font-size: 6vw;
-      }
-      #score { top: 3vw; }
-      #coins { top: 10vw; }
-      #shopBtn {
-        font-size: 6vw;
-        padding: 3vw 10vw;
-        top: 18vw;
-      }
-      #shop {
-        font-size: 5vw;
-        min-width: 80vw;
-        top: 28vw;
-        padding: 5vw;
-      }
-      #shop h2 { font-size: 7vw; margin-bottom: 3vw; }
-      .character-btn {
-        font-size: 5vw;
-        padding: 3vw 10vw;
-        margin: 3vw;
-      }
     }
   </style>
 </head>
@@ -139,7 +85,7 @@
       <span>Click to select unlocked character.</span>
     </div>
   </div>
-  <canvas id="gameCanvas"></canvas>
+  <canvas id="gameCanvas" width="800" height="300"></canvas>
 
   <script>
 // filepath: c:\Users\Joshua Sitorus\OneDrive\Desktop\dino 2\index.html
@@ -153,25 +99,6 @@ const buyDogBtn = document.getElementById("buyDog");
 const buyWolfBtn = document.getElementById("buyWolf");
 const buySabertoothBtn = document.getElementById("buySabertooth");
 const shopBtn = document.getElementById("shopBtn");
-
-// Responsive canvas sizing for desktop and mobile
-function resizeCanvas() {
-  // Use almost full width and 80% height of viewport, keep aspect ratio 800:300
-  let vw = window.innerWidth;
-  let vh = window.innerHeight;
-  let aspect = 800 / 300;
-  let width = vw;
-  let height = vh * 0.8;
-  if (width / height > aspect) {
-    width = height * aspect;
-  } else {
-    height = width / aspect;
-  }
-  canvas.width = width;
-  canvas.height = height;
-}
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
 
 // Dino sprite frames (simple rectangles for legs animation)
 const dinoFrames = [
@@ -460,10 +387,11 @@ function drawCoins() {
 }
 
 function updateCoins() {
-  if (frame % 150 === 0) {
+  // Spawn coins at random intervals and random vertical positions
+  if (Math.random() < 0.02) { // ~2% chance per frame
     coins.push({
       x: canvas.width,
-      y: 180 + Math.random() * 40,
+      y: 120 + Math.random() * 120, // random vertical position (adjust as needed)
       radius: 12,
       speed: 6
     });
@@ -584,6 +512,10 @@ canvas.addEventListener('pointerdown', function(e) {
     dino.isJumping = true;
     jumpSound.currentTime = 0;
     jumpSound.play();
+  }
+  // Restart game if game over and screen is pressed
+  if (gameOver) {
+    resetGame();
   }
 });
 
