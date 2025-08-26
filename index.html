@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dino Run</title>
   <style>
     :root {
@@ -40,7 +40,7 @@
       justify-content: space-between;
       align-items: flex-start;
       padding: 2vw 4vw 0 4vw;
-      position: fixed;
+      position: absolute;
       top: 0;
       left: 0;
       z-index: 2;
@@ -62,7 +62,7 @@
       user-select: none;
     }
     #shopBtn {
-      position: fixed;
+      position: absolute;
       top: 2vw;
       left: 50%;
       transform: translateX(-50%);
@@ -79,7 +79,6 @@
       cursor: pointer;
       transition: background 0.2s, border 0.2s, color 0.2s;
       text-shadow: 0 0 8px var(--yellow-glow), 0 2px 4px #000a;
-      pointer-events: auto;
     }
     #shopBtn:hover, #shopBtn:focus {
       background: var(--button-hover);
@@ -87,7 +86,7 @@
       color: var(--blue-glow);
     }
     #shop {
-      position: fixed;
+      position: absolute;
       top: 12vw;
       left: 50%;
       transform: translateX(-50%);
@@ -154,20 +153,16 @@
       width: 96vw;
       max-width: 800px;
       height: 48vw;
-      max-height: 340px;
-      margin-top: 16vw;
-      margin-bottom: 2vw;
-      /* Prevent canvas from being too small on mobile */
-      min-height: 180px;
+      max-height: 300px;
+      margin-top: 10vw;
     }
     @media (max-width: 600px) {
       #gameCanvas {
         width: 98vw;
-        height: 40vh;
+        height: 54vw;
         max-width: 100vw;
-        max-height: none;
-        margin-top: 28vw;
-        min-height: 160px;
+        max-height: 60vw;
+        margin-top: 18vw;
       }
       #shop {
         top: 22vw;
@@ -175,7 +170,7 @@
         min-width: 0;
       }
       #shopBtn {
-        top: 8vw;
+        top: 6vw;
         font-size: 6vw;
         padding: 3vw 10vw;
       }
@@ -202,6 +197,8 @@
   </div>
   <canvas id="gameCanvas" width="800" height="300"></canvas>
   <script>
+// filepath: c:\Users\Joshua Sitorus\OneDrive\Desktop\dino 2\index.html
+
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const scoreElement = document.getElementById("score");
@@ -218,12 +215,11 @@ function resizeCanvas() {
   let vh = window.innerHeight;
   let aspect = 800 / 300;
   let width, height;
-  // Use most of the viewport, keep aspect ratio, and ensure min height
   if (vw / vh > aspect) {
-    height = Math.max(Math.min(vh * 0.5, 340), 160);
+    height = Math.min(vh * 0.6, 300);
     width = height * aspect;
   } else {
-    width = Math.max(Math.min(vw * 0.96, 800), 320);
+    width = Math.min(vw * 0.98, 800);
     height = width / aspect;
   }
   canvas.style.width = width + "px";
@@ -248,17 +244,21 @@ const CHARACTERS = [
   {
     name: "dino",
     draw: function(x, y, frame) {
+      // Body
       ctx.save();
       ctx.shadowColor = "#00eaff";
       ctx.shadowBlur = 10;
       ctx.fillStyle = "#333";
       ctx.fillRect(x, y, 40, 40);
+      // Head
       ctx.fillStyle = "#444";
       ctx.fillRect(x + 28, y + 8, 18, 18);
+      // Eye
       ctx.fillStyle = "#ffe066";
       ctx.beginPath();
       ctx.arc(x + 40, y + 16, 3, 0, Math.PI * 2);
       ctx.fill();
+      // Legs
       ctx.fillStyle = "#00eaff";
       let legOffset = dinoFrames[frame].legOffset;
       ctx.fillRect(x + 5, y + 40, 8, 12 + legOffset);
@@ -362,12 +362,13 @@ const CHARACTERS = [
   }
 ];
 
+// Character unlock state
 let unlocked = {
   dog: false,
   wolf: false,
   sabertooth: false
 };
-let selectedCharacter = 0;
+let selectedCharacter = 0; // 0: dino, 1: dog, 2: wolf, 3: sabertooth
 
 let dino = {
   x: 50,
@@ -389,6 +390,7 @@ let score = 0;
 let coinCount = 0;
 let gameOver = false;
 
+// Sound effects
 const jumpSound = new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_115b6c6b2e.mp3");
 const hitSound = new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_115b6c6b2e.mp3");
 const coinSound = new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_115b6c6b2e.mp3");
@@ -403,6 +405,7 @@ document.addEventListener("keydown", (e) => {
   if (gameOver && e.code === "Enter") {
     resetGame();
   }
+  // Open shop with 'C' anytime
   if (e.code === "KeyC") {
     showShop();
   }
@@ -530,10 +533,10 @@ function drawCoins() {
 
 function updateCoins() {
   // Spawn coins at random intervals and random vertical positions
-  if (Math.random() < 0.02) {
+  if (Math.random() < 0.02) { // ~2% chance per frame
     coins.push({
       x: canvas.width,
-      y: 120 + Math.random() * 120,
+      y: 120 + Math.random() * 120, // random vertical position (adjust as needed)
       radius: 12,
       speed: 6
     });
@@ -597,6 +600,8 @@ function showShop() {
   buyDogBtn.disabled = unlocked.dog || coinCount < 50;
   buyWolfBtn.disabled = unlocked.wolf || coinCount < 100;
   buySabertoothBtn.disabled = unlocked.sabertooth || coinCount < 200;
+
+  // Highlight selected
   [buyDogBtn, buyWolfBtn, buySabertoothBtn].forEach((btn, idx) => {
     btn.classList.toggle("selected", selectedCharacter === idx + 1);
   });
@@ -634,8 +639,9 @@ buySabertoothBtn.onclick = function() {
   showShop();
 };
 
+// Hide shop when clicking outside
 document.addEventListener("mousedown", (e) => {
-  if (shopElement.style.display === "block" && !shopElement.contains(e.target) && e.target !== shopBtn) {
+  if (shopElement.style.display === "block" && !shopElement.contains(e.target)) {
     hideShop();
   }
 });
@@ -644,6 +650,7 @@ shopBtn.onclick = function() {
   showShop();
 };
 
+// Touch/click event for jumping and restart
 canvas.addEventListener('pointerdown', function(e) {
   if (!dino.isJumping && !gameOver) {
     dino.dy = dino.jumpPower;
@@ -651,6 +658,7 @@ canvas.addEventListener('pointerdown', function(e) {
     jumpSound.currentTime = 0;
     jumpSound.play();
   }
+  // Restart game if game over and screen is pressed
   if (gameOver) {
     resetGame();
   }
